@@ -3,6 +3,7 @@ var router = express.Router();
 var request = require('request');
 var cheerio = require('cheerio');
 var moment = require('moment');
+var http = require('http');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -40,11 +41,14 @@ router.get('/', function(req, res, next) {
 
 });
 
-router.get('/linea', function(req, res, next) {
+router.get('/linea', function(req, res, next) {	
 
-	url = 'http://salamanca.twa.es/code/getparadas.php?idl=' + req.query.idl;
+	var opt = {
+	    url: 'http://salamanca.twa.es/code/getparadas.php?idl=' + req.query.idl,
+	    headers: { 'Referer': 'http://salamanca.twa.es/'}
+	};
 
-	request(url, function(error, response, html){
+	request(opt, function(error, response, html){
 
         // First we'll check to make sure no errors occurred when making the request
         if(!error){
@@ -71,11 +75,14 @@ router.get('/linea', function(req, res, next) {
 
             	parsedData.idp = parameters[0].replace(/'/g, "");
             	parsedData.ido = parameters[1].replace(/'/g, "");
-            	parsedData.idl = req.query.idl;
+            	parsedData.idl = req.query.idl;            	
 
-            	stopUrl = 'http://salamanca.twa.es/code/getparadas.php?idl=' + parsedData.idl + '&idp=' + parsedData.idp + '&ido='+ parsedData.ido;            	            
+            	var opt = {
+				    url: 'http://salamanca.twa.es/code/getparadas.php?idl=' + parsedData.idl + '&idp=' + parsedData.idp + '&ido='+ parsedData.ido,
+				    headers: { 'Referer': 'http://salamanca.twa.es/'}
+				};
 
-            	request(stopUrl, function(error, response, html){            		
+            	request(opt, function(error, response, html){            		
 
             		if (!error){            			
 	            		var $ = cheerio.load(html);									
@@ -90,13 +97,15 @@ router.get('/linea', function(req, res, next) {
 
 	            		var diff = parsedData.proxima.diff(moment(), 'minutes');
 	            		if (diff > 15){
-	            			parsedData.color = "darken-4";
+	            			parsedData.color = "darken-3";
 	            		} else if (diff <= 15 && diff > 10) {
-	            			parsedData.color = "darken-1";
+	            			parsedData.color = "darken-2";
 	            		} else if (diff <= 10 && diff > 5) {
+	            			parsedData.color = "darken-1";
+	            		} else if (diff <= 5 && diff > 2) {
+	            			parsedData.color = "lighten-2";
+	            		} else if (diff <= 2) {
 	            			parsedData.color = "lighten-3";
-	            		} else if (diff <= 5) {
-	            			parsedData.color = "lighten-5";
 	            		}
 
 	            		if (parseInt(parsedData.dir) === 0){
@@ -133,7 +142,7 @@ router.get('/linea', function(req, res, next) {
 	            				direccion1: stopsDir1[0].direccion,
 	            				direccion2: stopsDir2[0].direccion,
 						    	stopsDir1: stopsDir1,
-						    	stopsDir2: stopsDir2,
+						    	stopsDir2: stopsDir2.reverse(),
 						    	idl: parsedData.idl
 						    });
 	            		}
@@ -146,4 +155,17 @@ router.get('/linea', function(req, res, next) {
 
 });
 
+router.get('/test', function(req, res, next) {	
+
+	var opt = {
+	    url: 'http://salamanca.twa.es/code/getparadas.php?idl=L-13&idp=1301&ido=1.00000',
+	    headers: { 'Referer': 'http://salamanca.twa.es/'}
+	};
+
+	request( opt, function(error, response, body) {
+		console.log(body);
+
+		res.render("error");
+	});
+});
 module.exports = router;
