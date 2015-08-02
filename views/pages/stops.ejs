@@ -3,22 +3,32 @@
 <head>
     <% include ../partials/head %>
 </head>
-<body class="container">
+<body>
 
-    <header class="row">        
+    <header>        
         <% include ../partials/header %>        
     </header>
 
     <div class="row">
-        <h1>Línea <%= idl %></h1>
+        <div class="col s12">
+            <h2 class="red-text text-lighten-1">Línea <%= idl %></h2>
+        </div>
     </div>
     <div class="row">
         <div class="col s12">
             <ul class="tabs">            
                 <li class="tab col s3">
-                    <a class="active" href="#direccion1">Dirección: <%= direccion1 %></a>
+                    <a class="tabs__text active" href="#direccion1">
+                        <i class="material-icons">swap_vert</i>
+                        <%= direccion1 %>
+                    </a>
                 </li>                
-                <li class="tab col s3"><a href="#direccion2">Dirección: <%= direccion2 %></a></li>
+                <li class="tab col s3">                    
+                    <a class="tabs__text" href="#direccion2">
+                        <i class="material-icons">swap_vert</i>
+                        <%= direccion2 %>
+                    </a>
+                </li>
             </ul>
         </div>
         <div id="direccion1" class="col s12">
@@ -27,7 +37,7 @@
                     <div class="col s12">
                         <div class="card">
                             <div class="card-content">
-                                <span class="card-title red-text"><%= stop.name %></span>
+                                <span class="flow-text red-text"><%= stop.name %></span>
                                 <p class="red-text text-accent-1">
                                     <%= stop.proxima.fromNow() %>
                                 </p>
@@ -45,7 +55,7 @@
                     <div class="col s12">
                         <div class="card">
                             <div class="card-content">
-                                <span class="card-title red-text"><%= stop.name %></span>
+                                <span class="flow-text red-text"><%= stop.name %></span>
                                 <p class="red-text text-accent-1">
                                     <%= stop.proxima.fromNow() %>
                                 </p>

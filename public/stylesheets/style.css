@@ -1,8 +1,10 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.tabs__text{
+	overflow: hidden;
+	text-overflow: ellipsis;	
+	padding: 0 10px;
 }
 
-a {
-  color: #00B7FF;
+.tabs__text i{
+	position: relative;
+	top: 4px;
 }
