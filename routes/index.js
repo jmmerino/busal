@@ -33,7 +33,7 @@ router.get('/linea', function(req, res, next) {
 			busStops.forEach(function(busStop, index) {				
 
 				busStop.idl = req.query.idl;
-				
+
 				var opt = {
 				    url: 'http://salamanca.twa.es/code/getparadas.php?idl=' + busStop.idl + '&idp=' + busStop.idp + '&ido='+ busStop.ido,
 				    headers: { 'Referer': 'http://salamanca.twa.es/'}
@@ -41,9 +41,7 @@ router.get('/linea', function(req, res, next) {
 				
 		    	request(opt, function(error, response, html) {
 		    		contParsedBusStops ++;
-		    		busStop = salenbus.parseBusStop(html, busStop);
-
-		    		console.log(busStop);
+		    		busStop = salenbus.parseBusStop(html, busStop);		    		
 
 		    		if (parseInt(busStop.direction) === 0){
 		    			busStopsDir1.push(busStop);
@@ -90,17 +88,7 @@ router.get('/linea', function(req, res, next) {
 
 });
 
-router.get('/test', function(req, res, next) {	
-
-	var opt = {
-	    url: 'http://salamanca.twa.es/code/getparadas.php?idl=L-13&idp=1301&ido=1.00000',
-	    headers: { 'Referer': 'http://salamanca.twa.es/'}
-	};
-
-	request( opt, function(error, response, body) {
-		console.log(body);
-
-		res.render("error");
-	});
+router.get('/acerca-de', function(req, res, next) {	
+	res.render('pages/about');
 });
 module.exports = router;
