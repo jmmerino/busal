@@ -1,6 +1,8 @@
 var cheerio = require('cheerio');
 var moment = require('moment');
 
+moment.locale('es');
+
 exports.parseBusLine = function(html){
     var $ = cheerio.load(html),
     	lines = [];         
