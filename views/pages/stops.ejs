@@ -35,10 +35,10 @@
             <div class="row">
                 <% stopsDir1.forEach(function(stop) { %>                    
                     <div class="col s12">
-                        <div class="card">
+                        <div class="card green <%= stop.color %>">
                             <div class="card-content">
-                                <span class="flow-text red-text"><%= stop.name %></span>
-                                <p class="red-text text-accent-1">
+                                <span class="flow-text white-text"><%= stop.name %></span>
+                                <p class="white-text text-accent-1">
                                     <%= stop.proxima.fromNow() %>
                                     (<%= stop.proxima.format("HH:mm") %>)
                                 </p>
@@ -54,10 +54,10 @@
             <div class="row">
                 <% stopsDir2.forEach(function(stop) { %>                    
                     <div class="col s12">
-                        <div class="card">
+                        <div class="card green <%= stop.color %>">
                             <div class="card-content">
-                                <span class="flow-text red-text"><%= stop.name %></span>
-                                <p class="red-text text-accent-1">
+                                <span class="flow-text white-text"><%= stop.name %></span>
+                                <p class="white-text text-accent-1">
                                     <%= stop.proxima.fromNow() %>
                                     (<%= stop.proxima.format("HH:mm") %>)
                                 </p>

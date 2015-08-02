@@ -86,7 +86,18 @@ router.get('/linea', function(req, res, next) {
 	            		$('#hora').find("br").replaceWith("_");
 	            		scheduleData = $('#hora').text().trim().split("_");	            		
 	            		parsedData.proxima = moment(scheduleData[0], "HH:mm");
-	            		parsedData.direccion = scheduleData[1];	            		
+	            		parsedData.direccion = scheduleData[1];	 
+
+	            		var diff = parsedData.proxima.diff(moment(), 'minutes');
+	            		if (diff > 15){
+	            			parsedData.color = "darken-4";
+	            		} else if (diff <= 15 && diff > 10) {
+	            			parsedData.color = "darken-1";
+	            		} else if (diff <= 10 && diff > 5) {
+	            			parsedData.color = "lighten-3";
+	            		} else if (diff <= 5) {
+	            			parsedData.color = "lighten-5";
+	            		}
 
 	            		if (parseInt(parsedData.dir) === 0){
 	            			stopsDir1.push(parsedData);
