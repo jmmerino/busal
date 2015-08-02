@@ -1,6 +1,9 @@
 var express = require('express');
 var router = express.Router();
 var request = require('request');
+var jschardet = require("jschardet");
+var Iconv  = require('iconv').Iconv;
+var charset = require('charset');
 var salenbus = require('../salenbus');
 
 
@@ -21,12 +24,13 @@ router.get('/linea', function(req, res, next) {
 		busStopsDir2 = [];	
 
 	var opt = {
-	    url: 'http://salamanca.twa.es/code/getparadas.php?idl=' + req.query.idl,
+	    url: 'http://salamanca.twa.es/code/getparadas.php?idl=' + req.query.idl,	    
 	    headers: { 'Referer': 'http://salamanca.twa.es/'}
 	};
 
 	request(opt, function(error, response, html) {
-		if (!error){
+		if (!error){			
+
 			var busStops = salenbus.parseBusStops(html);
 
 			var contParsedBusStops = 0;
@@ -36,10 +40,20 @@ router.get('/linea', function(req, res, next) {
 
 				var opt = {
 				    url: 'http://salamanca.twa.es/code/getparadas.php?idl=' + busStop.idl + '&idp=' + busStop.idp + '&ido='+ busStop.ido,
+				    encoding: 'binary',
 				    headers: { 'Referer': 'http://salamanca.twa.es/'}
 				};
 				
+
 		    	request(opt, function(error, response, html) {
+
+		    		enc = charset(res.headers, html);
+				    enc = enc || jschardet.detect(html).encoding.toLowerCase();
+				    if (enc != 'utf-8'){
+				    	iconv = new Iconv(enc, 'UTF-8//TRANSLIT//IGNORE');
+				        html = iconv.convert(new Buffer(html, 'binary')).toString('utf-8');
+				    }				      				   
+
 		    		contParsedBusStops ++;
 		    		busStop = salenbus.parseBusStop(html, busStop);		    		
 
