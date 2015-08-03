@@ -4,7 +4,7 @@ var request = require('request');
 var jschardet = require("jschardet");
 var Iconv  = require('iconv').Iconv;
 var charset = require('charset');
-var salenbus = require('../salenbus');
+var busal = require('../busal');
 
 
 /* GET lines page. */
@@ -13,7 +13,7 @@ router.get('/', function(req, res, next) {
 	request(url, function(error, response, html) {
 		if(!error){
 			res.render('pages/index', { 
-		    	lines: salenbus.parseBusLine(html)
+		    	lines: busal.parseBusLine(html)
 		    });
 		}
 	});
@@ -31,7 +31,7 @@ router.get('/linea', function(req, res, next) {
 	request(opt, function(error, response, html) {
 		if (!error){			
 
-			var busStops = salenbus.parseBusStops(html);
+			var busStops = busal.parseBusStops(html);
 
 			var contParsedBusStops = 0;
 			busStops.forEach(function(busStop, index) {				
@@ -55,7 +55,7 @@ router.get('/linea', function(req, res, next) {
 				    }				      				   
 
 		    		contParsedBusStops ++;
-		    		busStop = salenbus.parseBusStop(html, busStop);		    		
+		    		busStop = busal.parseBusStop(html, busStop);		    		
 
 		    		if (parseInt(busStop.direction) === 0){
 		    			busStopsDir1.push(busStop);
