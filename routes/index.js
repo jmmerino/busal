@@ -73,7 +73,7 @@ router.get('/linea', function(req, res, next) {
 								return -1;
 							}
 							return 0;
-						});
+						}).reverse();
 
 						busStopsDir2.sort(function(a, b) {
 							if ( parseInt(a.id) > parseInt(b.id)){
@@ -83,7 +83,7 @@ router.get('/linea', function(req, res, next) {
 								return -1;
 							}
 							return 0;
-						}).reverse();
+						});
 
 						res.render('pages/stops', {
 							direccion1: req.query.d1,
