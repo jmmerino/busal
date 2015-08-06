@@ -58,9 +58,9 @@ router.get('/linea', function(req, res, next) {
 		    		busStop = busal.parseBusStop(html, busStop);		    		
 
 		    		if (parseInt(busStop.direction) === 0){
-		    			busStopsDir1.push(busStop);
-		    		} else {
 		    			busStopsDir2.push(busStop);
+		    		} else {
+		    			busStopsDir1.push(busStop);
 		    		}
 		    		
 		    		if (contParsedBusStops === busStops.length){
