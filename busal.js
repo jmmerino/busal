@@ -14,7 +14,7 @@
             var data = $(this),
                 parsedData = {};
 
-            parsedData.num = data.attr("href").match(/"([^"]*)"/g)[0].replace(/"/g, "");
+            parsedData.num = data.attr("href").match(/'([^']*)'/g)[0].replace(/'/g, "");
             parsedData.name = data.text();
 
             var directions = parsedData.name.replace("(" + parsedData.num + ")", "").split("-");
@@ -38,14 +38,14 @@
                 parsedData = {},
                 parameters;
 
-            parameters = data.attr("onmouseover").match(/"([^"]*)"/g);
-            parameters = parameters[2].replace(/"/g, "").split("::");
+            parameters = data.attr("onmouseover").match(/'([^']*)'/g);
+            parameters = parameters[2].replace(/'/g, "").split("::");
 
             parsedData.id = data.attr("id").split("-")[1];
             parsedData.direction = data.attr("id").split("-")[0].replace("ar", "");
 
-            parsedData.idp = parameters[0].replace(/"/g, "");
-            parsedData.ido = parameters[1].replace(/"/g, "");
+            parsedData.idp = parameters[0].replace(/'/g, "");
+            parsedData.ido = parameters[1].replace(/'/g, "");
 
             stops.push(parsedData);
         });
