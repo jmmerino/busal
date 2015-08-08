@@ -1,80 +1,84 @@
-var cheerio = require('cheerio');
-var moment = require('moment');
+(function() {
+    "use strict";
 
-moment.locale('es');
+    var cheerio = require("cheerio"),
+        moment = require("moment");
 
-exports.parseBusLine = function(html){
-    var $ = cheerio.load(html),
-    	lines = [];         
+    moment.locale("es");
 
-    $('a').filter(function() {
-    	var data = $(this),
-    		parsedData = {};
+    exports.parseBusLine = function(html) {
+        var $ = cheerio.load(html),
+            lines = [];
 
-    	parsedData.num = data.attr("href").match(/'([^']*)'/g)[0].replace(/'/g, "");
-    	parsedData.name = data.text();
+        $("a").filter(function() {
+            var data = $(this),
+                parsedData = {};
 
-    	var directions = parsedData.name.replace("(" + parsedData.num + ")", "").split("-");
-    	parsedData.direccion1 = directions[0].trim();
-    	parsedData.direccion2 = (directions[1] ? directions[1].trim() : "SALAMANCA");
+            parsedData.num = data.attr("href").match(/"([^"]*)"/g)[0].replace(/"/g, "");
+            parsedData.name = data.text();
 
-    	lines.push(parsedData);
-    	
-    });
+            var directions = parsedData.name.replace("(" + parsedData.num + ")", "").split("-");
+            parsedData.direccion1 = directions[0].trim();
+            parsedData.direccion2 = (directions[1] ? directions[1].trim() : "SALAMANCA");
 
-    return lines;		        
-};
+            lines.push(parsedData);
 
-exports.parseBusStops = function(html){
+        });
 
-    var $ = cheerio.load(html);	    
+        return lines;
+    };
 
-    var stops = []; 
+    exports.parseBusStops = function(html) {
 
-    $('map area').filter(function() {
-    	var data = $(this),
-    		parsedData = {};
+        var $ = cheerio.load(html),
+            stops = [];
 
-    	parameters = data.attr("onmouseover").match(/'([^']*)'/g);
-    	parameters = parameters[2].replace(/'/g, "").split("::");            	
+        $("map area").filter(function() {
+            var data = $(this),
+                parsedData = {},
+                parameters;
 
-    	parsedData.id = data.attr("id").split("-")[1];
-    	parsedData.direction = data.attr("id").split("-")[0].replace("ar", "");
+            parameters = data.attr("onmouseover").match(/"([^"]*)"/g);
+            parameters = parameters[2].replace(/"/g, "").split("::");
 
-    	parsedData.idp = parameters[0].replace(/'/g, "");
-    	parsedData.ido = parameters[1].replace(/'/g, "");    	
+            parsedData.id = data.attr("id").split("-")[1];
+            parsedData.direction = data.attr("id").split("-")[0].replace("ar", "");
 
-    	stops.push(parsedData);	         		
-    });            	
+            parsedData.idp = parameters[0].replace(/"/g, "");
+            parsedData.ido = parameters[1].replace(/"/g, "");
 
-    return stops;
-};
+            stops.push(parsedData);
+        });
 
-exports.parseBusStop = function(html, busStop){            		
-	var $ = cheerio.load(html),
-		scheduleData;
+        return stops;
+    };
 
-	busStop.name = $('#titparada').text().replace("Parada: ", "");
+    exports.parseBusStop = function(html, busStop) {
+        var $ = cheerio.load(html),
+            scheduleData;
 
-	$('#hora').find("span").remove();
-	$('#hora').find("br").replaceWith("_");
-	scheduleData = $('#hora').text().trim().split("_");	            		
-	busStop.proxima = moment(scheduleData[0], "HH:mm");
-	busStop.direccion = scheduleData[1];	 
+        busStop.name = $("#titparada").text().replace("Parada: ", "");
 
-	var diff = busStop.proxima.diff(moment(), 'minutes');
-	if (diff > 15){
-		busStop.color = "darken-3";
-	} else if (diff <= 15 && diff > 10) {
-		busStop.color = "darken-2";
-	} else if (diff <= 10 && diff > 5) {
-		busStop.color = "darken-1";
-	} else if (diff <= 5 && diff > 2) {
-		busStop.color = "lighten-2";
-	} else if (diff <= 2) {
-		busStop.color = "lighten-3";
-	}
+        $("#hora").find("span").remove();
+        $("#hora").find("br").replaceWith("_");
+        scheduleData = $("#hora").text().trim().split("_");
+        busStop.proxima = moment(scheduleData[0], "HH:mm");
+        busStop.direccion = scheduleData[1];
 
-	return busStop;
-};
+        var diff = busStop.proxima.diff(moment(), "minutes");
+        if (diff > 15){
+            busStop.color = "darken-3";
+        } else if (diff <= 15 && diff > 10) {
+            busStop.color = "darken-2";
+        } else if (diff <= 10 && diff > 5) {
+            busStop.color = "darken-1";
+        } else if (diff <= 5 && diff > 2) {
+            busStop.color = "lighten-2";
+        } else if (diff <= 2) {
+            busStop.color = "lighten-3";
+        }
 
+        return busStop;
+    };
+
+})();
