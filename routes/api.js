@@ -60,6 +60,7 @@
 
                     contParsedBusStops++;
                     busStop = busal.parseBusStop(html, busStop);
+                    busStop.proxima = busStop.proxima.fromNow();
 
                     if (parseInt(busStop.direction) === 0){
                         busStopsDir2.push(busStop);
