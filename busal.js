@@ -15,7 +15,8 @@
                 parsedData = {};
 
             parsedData.num = data.attr("href").match(/'([^']*)'/g)[0].replace(/'/g, "");
-            parsedData.name = data.text();
+            // parsedData.name = data.text();
+            parsedData.name = data.text().replace("(" + parsedData.num + ")", "").trim();
 
             var directions = parsedData.name.replace("(" + parsedData.num + ")", "").split("-");
             parsedData.direccion1 = directions[0].trim();
