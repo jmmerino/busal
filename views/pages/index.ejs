@@ -4,9 +4,9 @@
     <% include ../partials/head %>
 </head>
 <body>
-    
+
     <header>
-        <% include ../partials/header %>    
+        <% include ../partials/header %>
     </header>
 
     <div class="row">
@@ -15,16 +15,16 @@
                 <div class="collection-header">
                     <h4>Líneas de autobus</h4>
                 </div>
-                <% lines.forEach(function(line) { %>                    
+                <% lines.forEach(function(line) { %>
                     <a class="collection-item red-text" href="/linea?idl=<%= line.num %>&d1=<%= line.direccion1 %>&d2=<%= line.direccion2 %>">
-                        <%= line.name %>
+                        <%= line.num %> - <%= line.name %>
                     </a>
                 <% }); %>
-            </div>  
-        </div> 
-    </div>      
-    
-    <% include ../partials/footer %>        
-    
+            </div>
+        </div>
+    </div>
+
+    <% include ../partials/footer %>
+
 </body>
 </html>

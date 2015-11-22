@@ -7,6 +7,13 @@
 
     moment.locale("es");
 
+    exports.parseParamfdwp = function(html) {
+        var $ = cheerio.load(html),
+            text = $("script").last().text();
+
+        return text.substring(text.indexOf('\'')+1, text.lastIndexOf('\''));
+    };
+
     exports.parseBusLine = function(html) {
         var $ = cheerio.load(html),
             lines = [];

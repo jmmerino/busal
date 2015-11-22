@@ -10,9 +10,12 @@
         busal = require("../busal");
 
     router.get("/lines", function(req, res) {
-        var url = "http://salamanca.twa.es/code/getlineas.php";
+        var opt = {
+            url: "http://salamanca.twa.es/code/getlineas.php",
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+        };
 
-        request(url, function(error, response, html) {
+        request(opt, function(error, response, html) {
             if (!error) {
                 res.json(busal.parseBusLine(html));
             }
@@ -26,7 +29,10 @@
 
         opt = {
             url: "http://salamanca.twa.es/code/getparadas.php?idl=" + req.query.idl,
-            headers: { Referer: "http://salamanca.twa.es/" }
+            headers: {
+                Referer: "http://salamanca.twa.es/",
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+            }
         };
 
         request(opt, function(error, response, html) {
@@ -42,7 +48,8 @@
                     url: "http://salamanca.twa.es/code/getparadas.php?idl=" + busStop.idl + "&idp=" + busStop.idp + "&ido=" + busStop.ido,
                     encoding: "binary",
                     headers: {
-                        Referer: "http://salamanca.twa.es/"
+                        Referer: "http://salamanca.twa.es/",
+                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
                     }
                 };
 
