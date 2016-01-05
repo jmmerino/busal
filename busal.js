@@ -2,92 +2,92 @@
     "use strict";
 
 
-    var cheerio = require("cheerio"),
-        moment = require("moment");
+    var moment = require("moment"),
+        firebase = require("firebase"),
+        _ = require("underscore");
+
+    var db = new firebase("https://resplendent-inferno-2934.firebaseio.com/");
 
     moment.locale("es");
 
-    exports.parseParamfdwp = function(html) {
-        var $ = cheerio.load(html),
-            text = $("script").last().text();
-
-        return text.substring(text.indexOf('\'')+1, text.lastIndexOf('\''));
+    exports.getLines = function(callback) {
+        db.child("lines").orderByKey().on("value", callback);
     };
 
-    exports.parseBusLine = function(html) {
-        var $ = cheerio.load(html),
-            lines = [];
+    exports.getDirections = function(lineRef, callback) {
+        db.child("directions/" + lineRef).on("value", callback);
+    };
 
-        $("a").filter(function() {
-            var data = $(this),
-                parsedData = {};
+    exports.getStops = function(lineRef, directionRef, callback) {
+        db.child("stops/" + lineRef + "/" + directionRef).orderByChild("order").on("value", callback);
+    };
 
-            parsedData.num = data.attr("href").match(/'([^']*)'/g)[0].replace(/'/g, "");
-            // parsedData.name = data.text();
-            parsedData.name = data.text().replace("(" + parsedData.num + ")", "").trim();
+    exports.parseLinesSOAP = function(soapResponse) {
 
-            var directions = parsedData.name.replace("(" + parsedData.num + ")", "").split("-");
-            parsedData.direccion1 = directions[0].trim();
-            parsedData.direccion2 = (directions[1] ? directions[1].trim() : "SALAMANCA");
+        var rawSoapLines = soapResponse.data.LinesDiscoveryResponse.LinesDiscoveryResult[1].Answer,
+            dbLinesCollection = db.child("lines"),
+            dbDirectionsCollection = db.child("directions");
+        rawSoapLines.shift();
 
-            lines.push(parsedData);
+        db.remove();
+
+        rawSoapLines.forEach(function(rawSoapLine) {
+            var lineRef = rawSoapLine.AnnotatedLineRef[0].LineRef,
+                rawSoapDirections = rawSoapLine.AnnotatedLineRef[3].Directions;
+
+            // Store lines
+            dbLinesCollection.push().set({
+                ref: lineRef,
+                name: rawSoapLine.AnnotatedLineRef[1].LineName
+            });
+
+            // Store directions
+            if (_.isArray(rawSoapDirections)) {
+                console.log("array");
+                rawSoapDirections.forEach(function(rawSoapDirection) {
+                    dbDirectionsCollection
+                        .child(lineRef)
+                        .push().set({
+                            ref: rawSoapDirection.Direction[0].DirectionRef,
+                            name: rawSoapDirection.Direction[1].DirectionName
+                    });
+
+                    saveStops(lineRef, rawSoapDirection);
+                });
+            } else {
+                dbDirectionsCollection
+                    .child(lineRef)
+                    .push().set({
+                        ref: rawSoapDirections.Direction[0].DirectionRef,
+                        name: rawSoapDirections.Direction[1].DirectionName
+                });
+
+                saveStops(lineRef, rawSoapDirections);
+            }
 
         });
 
-        return lines;
+        return { status: "ok" };
+
     };
 
-    exports.parseBusStops = function(html) {
+    function saveStops(lineRef, rawSoapDirection) {
+        var dbStopsCollection = db.child("stops");
 
-        var $ = cheerio.load(html),
-            stops = [];
+        rawSoapDirection.Direction[2].Stops.forEach(function(rawSoapStop) {
 
-        $("map area").filter(function() {
-            var data = $(this),
-                parsedData = {},
-                parameters;
+            dbStopsCollection.child(lineRef)
+                .child(rawSoapDirection.Direction[0].DirectionRef)
+                .push()
+                .set({
+                    ref: rawSoapStop.StopPointInPattern[0].StopPointRef,
+                    name: rawSoapStop.StopPointInPattern[1].StopName,
+                    lat: rawSoapStop.StopPointInPattern[2].Location[0].Latitude,
+                    lng: rawSoapStop.StopPointInPattern[2].Location[1].Longitude,
+                    order: rawSoapStop.StopPointInPattern[3].Order
+            });
 
-            parameters = data.attr("onmouseover").match(/'([^']*)'/g);
-            parameters = parameters[2].replace(/'/g, "").split("::");
-
-            parsedData.id = data.attr("id").split("-")[1];
-            parsedData.direction = data.attr("id").split("-")[0].replace("ar", "");
-
-            parsedData.idp = parameters[0].replace(/'/g, "");
-            parsedData.ido = parameters[1].replace(/'/g, "");
-
-            stops.push(parsedData);
         });
-
-        return stops;
-    };
-
-    exports.parseBusStop = function(html, busStop) {
-        var $ = cheerio.load(html),
-            scheduleData;
-
-        busStop.name = $("#titparada").text().replace("Parada: ", "");
-
-        $("#hora").find("span").remove();
-        $("#hora").find("br").replaceWith("_");
-        scheduleData = $("#hora").text().trim().split("_");
-        busStop.proxima = moment(scheduleData[0], "HH:mm");
-        busStop.direccion = scheduleData[1];
-
-        var diff = busStop.proxima.diff(moment(), "minutes");
-        if (diff > 15){
-            busStop.color = "darken-3";
-        } else if (diff <= 15 && diff > 10) {
-            busStop.color = "darken-2";
-        } else if (diff <= 10 && diff > 5) {
-            busStop.color = "darken-1";
-        } else if (diff <= 5 && diff > 2) {
-            busStop.color = "lighten-2";
-        } else if (diff <= 2) {
-            busStop.color = "lighten-3";
-        }
-
-        return busStop;
     };
 
 })();

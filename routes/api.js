@@ -3,112 +3,135 @@
 
     var express = require("express"),
         router = express.Router(),
-        request = require("request"),
-        jschardet = require("jschardet"),
-        Iconv  = require("iconv").Iconv,
-        charset = require("charset"),
-        busal = require("../busal");
+        busal = require("../busal"),
+        easysoap = require("easysoap"),
+        logger = require("../logger");
 
-    router.get("/lines", function(req, res) {
-        var opt = {
-            url: "http://salamanca.twa.es/code/getlineas.php",
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
-        };
+    router.get("/import", function(req, res) {
 
-        request(opt, function(error, response, html) {
-            if (!error) {
-                res.json(busal.parseBusLine(html));
-            }
-        });
-    });
+        var params, soapClient;
 
-    router.get("/stops", function(req, res) {
-        var busStopsDir1 = [],
-            busStopsDir2 = [],
-            opt;
-
-        opt = {
-            url: "http://salamanca.twa.es/code/getparadas.php?idl=" + req.query.idl,
+        // define soap params for siri webservice
+        params = {
+            host: "http://95.63.53.46:8015",
+            path: "/SIRI/SiriWS.asmx?wsdl",
+            wsdl: "/SIRI/SiriWS.asmx?wsdl",
             headers: {
-                Referer: "http://salamanca.twa.es/",
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+                SOAPAction: "http://tempuri.org/LinesDiscovery",
+                namespace: "tns"
             }
         };
 
-        request(opt, function(error, response, html) {
-
-            var busStops = busal.parseBusStops(html),
-                contParsedBusStops = 0;
-
-            busStops.forEach(function(busStop) {
-
-                busStop.idl = req.query.idl;
-
-                var opt = {
-                    url: "http://salamanca.twa.es/code/getparadas.php?idl=" + busStop.idl + "&idp=" + busStop.idp + "&ido=" + busStop.ido,
-                    encoding: "binary",
-                    headers: {
-                        Referer: "http://salamanca.twa.es/",
-                        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36'
+        // Create the client for LinesDiscovery method
+        soapClient = easysoap.createClient(params),
+            callParams = {
+                method: "LinesDiscovery",
+                namespace: "tns",
+                params: {
+                    LinesDiscovery: {
+                        "tns:request": {
+                            Request:{
+                                "s2:RequestTimestamp": "2016-01-01T12:59:12.000",
+                                "s2:AccountId": "siritest",
+                                "s2:AccountKey": "siritest",
+                            },
+                        }
                     }
-                };
+                }
+            };
 
-                request(opt, function(error, response, html) {
+        // TODO: Only for Debug, view the xml of the request
+        // soapClient.getRequestXml(callParams)
+        //     .then((callResponse) => {
+        //         res.json({ status: callResponse });
+        //         // logger.info(callResponse);
+        //     })
+        //     .catch((err) => {
+        //         logger.info(err);
+        //         throw new Error(err);
+        //     });
 
-                    var enc = charset(res.headers, html),
-                        iconv;
+        // Make the call to the LinesDiscovery method
+        soapClient.call(callParams)
+            .then(function(callResponse) {
 
-                    enc = enc || jschardet.detect(html).encoding.toLowerCase();
+                var response = busal.parseLinesSOAP(callResponse);
 
-                    if (enc != "utf-8"){
-                        iconv = new Iconv(enc, "UTF-8//TRANSLIT//IGNORE");
-                        html = iconv.convert(new Buffer(html, "binary")).toString("utf-8");
-                    }
-
-                    contParsedBusStops++;
-                    busStop = busal.parseBusStop(html, busStop);
-                    busStop.proxima = busStop.proxima.fromNow();
-
-                    if (parseInt(busStop.direction) === 0){
-                        busStopsDir2.push(busStop);
-                    } else {
-                        busStopsDir1.push(busStop);
-                    }
-
-                    if (contParsedBusStops === busStops.length){
-
-                        busStopsDir1.sort(function(a, b) {
-                            if ( parseInt(a.id) > parseInt(b.id)){
-                                return 1;
-                            }
-                            if ( parseInt(a.id) < parseInt(b.id)){
-                                return -1;
-                            }
-                            return 0;
-                        }).reverse();
-
-                        busStopsDir2.sort(function(a, b) {
-                            if ( parseInt(a.id) > parseInt(b.id)){
-                                return 1;
-                            }
-                            if ( parseInt(a.id) < parseInt(b.id)){
-                                return -1;
-                            }
-                            return 0;
-                        });
-
-                        res.json({
-                            direction1: busStopsDir1,
-                            direction2: busStopsDir2
-                        });
-                    }
-                });
-
+                res.json(response);
+            })
+            .catch(function(err) {
+                logger.info(err);
+                throw new Error(err);
             });
 
-        });
-
     });
+
+
+    router.get("/lines", function(req, res) {
+        busal.getLines(function(snapshot) {
+            res.json(snapshot.val());
+        });
+    });
+
+    router.get("/line/:lineRef", function(req, res) {
+        var lineRef = req.params.lineRef;
+
+        busal.getDirections(lineRef, function(snapshot) {
+            res.json(snapshot.val());
+        });
+    });
+
+    router.get("/line/:lineRef/:directionRef", function(req, res) {
+        var lineRef = req.params.lineRef,
+            directionRef = req.params.directionRef;
+
+        busal.getStops(lineRef, directionRef, function(snapshot) {
+            res.json(snapshot.val());
+        });
+    });
+
+    router.get("/stop/:stopRef", function(req, res) {
+        var stopRef = req.params.stopRef,
+            params = getSoapParams("GetStopMonitoring"),
+            soapClient = easysoap.createClient(params),
+            callParams = {
+                method: "GetStopMonitoring",
+                namespace: "tns",
+                params: {
+                    "tns:request": {
+                        ServiceRequestInfo: {
+                            "s2:RequestTimestamp": "2016-01-01T12:59:12.000",
+                            "s2:AccountId": "siritest",
+                            "s2:AccountKey": "siritest",
+                        },
+                        Request:{
+                            "s2:MonitoringRef": stopRef,
+                        },
+                    }
+                }
+            };
+
+        soapClient.call(callParams)
+            .then(function(callResponse) {
+                res.json(callResponse);
+            })
+            .catch(function(err) {
+                logger.info(err);
+                throw new Error(err);
+            });
+    });
+
+    function getSoapParams(methodName){
+        return {
+            host: "http://95.63.53.46:8015",
+            path: "/SIRI/SiriWS.asmx?wsdl",
+            wsdl: "/SIRI/SiriWS.asmx?wsdl",
+            headers: {
+                SOAPAction: "http://tempuri.org/" + methodName,
+                namespace: "tns"
+            }
+        };
+    }
 
     module.exports = router;
 })();
