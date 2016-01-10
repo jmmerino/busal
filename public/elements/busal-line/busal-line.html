@@ -1,0 +1,108 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/firebase-element/firebase-collection.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
+<!-- <link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-poly.html">
+<link rel="import" href="../../bower_components/google-map/google-map-directions.html"> -->
+
+<dom-module id="busal-line">
+    <template>
+        <style>
+        :host {
+            display: block;
+        }
+        .stop__item{
+            margin-bottom: 20px;
+        }
+        </style>
+
+        <firebase-collection
+            id="dbStopsDirection1"
+            data="{{stopsDirection1}}">
+        </firebase-collection>
+
+        <firebase-collection
+            id="dbStopsDirection2"
+            data="{{stopsDirection2}}">
+        </firebase-collection>
+
+
+        <paper-material elevation="2" class="stop__item">
+            <template is="dom-repeat" items="{{stopsDirection1}}" as="stop">
+                <paper-icon-item>
+                    <iron-icon icon="image:nature" item-icon></iron-icon>
+                    <a data-route="/stop/{{stop.ref}}" href="/stop/{{stop.ref}}">
+                        <paper-item-body two-line>
+                            <div>{{stop.name}} ({{stop.ref}})</div>
+                        </paper-item-body>
+                    </a>
+                </paper-icon-item>
+            </template>
+        </paper-material>
+
+        <paper-material elevation="2" class="stop__item">
+            <template is="dom-repeat" items="{{stopsDirection2}}" as="stop">
+                <paper-icon-item>
+                    <iron-icon icon="image:nature" item-icon></iron-icon>
+                    <a href="/stop/{{stop.ref}}">
+                        <paper-item-body two-line>
+                            <div>{{stop.name}} ({{stop.ref}})</div>
+                        </paper-item-body>
+                    </a>
+                </paper-icon-item>
+            </template>
+        </paper-material>
+
+        <!-- <div class="line__map">
+            <google-map-directions map="{{map}}"
+                id="mapDirections"
+                end-address="Madrid"
+                waypoints='[{"location": "Guijuelo, Salamanca"}, {"location": "Bejar, Salamanca"}]'></google-map-directions>
+            <google-map map="{{map}}" latitude="40.9702648" longitude="-5.6654149"></google-map>
+
+            <google-map latitude="40.9702648" longitude="-5.6654149" language="en">
+                <google-map-poly fill-color="red" fill-opacity=".25" stroke-weight="1">
+                    <template is="dom-repeat" items="{{stops}}" as="stop">
+                        <google-map-point latitude="{{stop.lat}}" longitude="{{stop.lng}}"></google-map-point>
+                    </template>
+                </google-map-poly>
+            </google-map>
+        </div> -->
+
+    </template>
+
+    <script>
+    (function() {
+        'use strict';
+
+        Polymer({
+            is: 'busal-line',
+            properties: {
+                lineRef: {
+                    type: String,
+                    observer: '_lineRefChanged'
+                }
+            },
+            _lineRefChanged: function(newValue, oldValue){
+                var lineRef = newValue;
+                console.log(lineRef);
+
+                this.$.dbStopsDirection1.location = "https://resplendent-inferno-2934.firebaseio.com/stops/" + lineRef + "/11";
+
+                this.$.dbStopsDirection2.location = "https://resplendent-inferno-2934.firebaseio.com/stops/" + lineRef + "/22";
+                // this.$.mapDirections.startAddress = {lat: 40.9702648, lng: -5.6654149}
+            }
+        });
+
+    })();
+    </script>
+</dom-module>
