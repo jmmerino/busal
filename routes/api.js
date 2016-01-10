@@ -113,7 +113,8 @@
 
         soapClient.call(callParams)
             .then(function(callResponse) {
-                res.json(callResponse);
+                var response = busal.parseStopSOAP(callResponse);
+                res.json(response);
             })
             .catch(function(err) {
                 logger.info(err);

@@ -71,6 +71,28 @@
 
     };
 
+    exports.parseStopSOAP = function(stopSOAPResponse) {
+        var data = stopSOAPResponse.data.GetStopMonitoringResponse.GetStopMonitoringResult[1].Answer.StopMonitoringDelivery;
+
+        var linesInThisStop = [];
+
+        for (var i = 4; i < data.length; i++) {
+            var stopInfo = data[i].MonitoredStopVisit[2].MonitoredVehicleJourney;
+            var line = {
+                lineRef       : stopInfo[0].lineRef,
+                directionRef  : stopInfo[1].DirectionRef,
+                lineName      : stopInfo[3].PublishedLineName,
+                directionName : stopInfo[4].DirectionName,
+                arrivalTime   : stopInfo[19].MonitoredCall[3].ExpectedArrivalTime,
+                distance      : stopInfo[19].MonitoredCall[6].DistanceFromStop
+            }
+
+            linesInThisStop.push(line);
+        };
+
+        return linesInThisStop;
+    };
+
     function saveStops(lineRef, rawSoapDirection) {
         var dbStopsCollection = db.child("stops");
 
