@@ -9,7 +9,7 @@
 
     router.get("/import", function(req, res) {
 
-        var params, soapClient;
+        var params, soapClient, callParams;
 
         // define soap params for siri webservice
         params = {
