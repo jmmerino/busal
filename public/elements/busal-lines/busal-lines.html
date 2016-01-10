@@ -13,43 +13,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/firebase-element/firebase-collection.html">
 
 <dom-module id="busal-lines">
-  <template>
+<template>
     <style>
       :host {
         display: block;
-      }
-      .lines__item{
+    }
+    .lines__item{
         background-color: white;
         margin-bottom: 20px;
-      }
-    </style>
+    }
+</style>
 
-    <firebase-collection
-      location="https://resplendent-inferno-2934.firebaseio.com/lines"
-      data="{{lines}}"></firebase-collection>
+<firebase-collection
+    location="https://resplendent-inferno-2934.firebaseio.com/lines"
+    data="{{lines}}">
+</firebase-collection>
 
-    <div class="lines__container">
-      <template is="dom-repeat" items="{{lines}}" as="line">
+<div class="lines__container">
+    <template is="dom-repeat" items="{{lines}}" as="line">
         <paper-material elevation="2" class="lines__item">
-          <paper-icon-item>
-            <iron-icon icon="maps:directions-bus" item-icon></iron-icon>
-            <paper-item-body two-line>
-              <div>Línea - {{line.ref}}</div>
-              <div>{{line.name}}</div>
-            </paper-item-body>
-          </paper-icon-item>
+            <paper-icon-item>
+                <iron-icon icon="maps:directions-bus" item-icon></iron-icon>
+                <a data-route="/lines/{{line.ref}}" href="/lines/{{line.ref}}">
+                    <paper-item-body two-line>
+                        <div>Línea - {{line.ref}}</div>
+                        <div>{{line.name}}</div>
+                    </paper-item-body>
+                </a>
+            </paper-icon-item>
         </paper-material>
-      </template>
-    </paper-material>
-  </template>
+    </template>
+</paper-material>
+</template>
 
-  <script>
-    (function() {
-      'use strict';
+<script>
+(function() {
+    'use strict';
 
-      Polymer({
+    Polymer({
         is: 'busal-lines'
-      });
-    })();
-  </script>
+    });
+})();
+</script>
 </dom-module>
