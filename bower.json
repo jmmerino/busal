@@ -10,7 +10,8 @@
     "polymer": "Polymer/polymer#^1.2.0",
     "paper-menu": "PolymerElements/paper-menu#4fecb43601",
     "firebase-element": "GoogleWebComponents/firebase-element#~1.0.9",
-    "google-map": "GoogleWebComponents/google-map#~1.1.7"
+    "google-map": "GoogleWebComponents/google-map#~1.1.7",
+    "geo-location": "~1.0.2"
   },
   "devDependencies": {
     "web-component-tester": "*"

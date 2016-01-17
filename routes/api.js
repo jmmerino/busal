@@ -76,8 +76,8 @@
     router.get("/line/:lineRef", function(req, res) {
         var lineRef = req.params.lineRef;
 
-        busal.getDirections(lineRef, function(snapshot) {
-            res.json(snapshot.val());
+        busal.getDirections(lineRef, function(stops) {
+            res.json(stops);
         });
     });
 

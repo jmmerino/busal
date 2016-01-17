@@ -16,7 +16,18 @@
     };
 
     exports.getDirections = function(lineRef, callback) {
-        db.child("directions/" + lineRef).on("value", callback);
+        var stops = [];
+        db.child("stops/" + lineRef + "/11").orderByChild("order").on("value", function(stopsDir11) {
+            _.each(stopsDir11.val(), function(stop) {
+                stops.push(stop)
+            })
+            db.child("stops/" + lineRef + "/22").orderByChild("order").on("value", function(stopsDir22) {
+                _.each(stopsDir22.val(), function(stop) {
+                    stops.push(stop)
+                })
+                callback(stops);
+            });
+        });
     };
 
     exports.getStops = function(lineRef, directionRef, callback) {

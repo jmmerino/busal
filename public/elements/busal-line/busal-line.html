@@ -25,59 +25,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
         </style>
 
-        <firebase-collection
-            id="dbStopsDirection1"
-            data="{{stopsDirection1}}">
-        </firebase-collection>
+        <iron-ajax
+            id="ajax"
+            auto
+            url="/api/v0.1/stop/34"
+            handle-as="json"
+            last-response="{{stops}}"
+            debounce-duration="300"
+            loading="{{isLoading}}"></iron-ajax>
 
-        <firebase-collection
-            id="dbStopsDirection2"
-            data="{{stopsDirection2}}">
-        </firebase-collection>
-
-
-        <paper-material elevation="2" class="stop__item">
-            <template is="dom-repeat" items="{{stopsDirection1}}" as="stop">
-                <paper-icon-item>
-                    <iron-icon icon="image:nature" item-icon></iron-icon>
-                    <a data-route="/stop/{{stop.ref}}" href="/stop/{{stop.ref}}">
-                        <paper-item-body two-line>
-                            <div>{{stop.name}} ({{stop.ref}})</div>
-                        </paper-item-body>
-                    </a>
-                </paper-icon-item>
-            </template>
-        </paper-material>
-
-        <paper-material elevation="2" class="stop__item">
-            <template is="dom-repeat" items="{{stopsDirection2}}" as="stop">
-                <paper-icon-item>
-                    <iron-icon icon="image:nature" item-icon></iron-icon>
-                    <a href="/stop/{{stop.ref}}">
-                        <paper-item-body two-line>
-                            <div>{{stop.name}} ({{stop.ref}})</div>
-                        </paper-item-body>
-                    </a>
-                </paper-icon-item>
-            </template>
-        </paper-material>
-
-        <!-- <div class="line__map">
-            <google-map-directions map="{{map}}"
-                id="mapDirections"
-                end-address="Madrid"
-                waypoints='[{"location": "Guijuelo, Salamanca"}, {"location": "Bejar, Salamanca"}]'></google-map-directions>
-            <google-map map="{{map}}" latitude="40.9702648" longitude="-5.6654149"></google-map>
-
-            <google-map latitude="40.9702648" longitude="-5.6654149" language="en">
-                <google-map-poly fill-color="red" fill-opacity=".25" stroke-weight="1">
-                    <template is="dom-repeat" items="{{stops}}" as="stop">
-                        <google-map-point latitude="{{stop.lat}}" longitude="{{stop.lng}}"></google-map-point>
-                    </template>
-                </google-map-poly>
-            </google-map>
-        </div> -->
-
+        <div class="loading" hidden$={{!isLoading}}>
+            <paper-spinner alt="Cargando información de la parada" active></paper-spinner>
+        </div>
+        <div hidden$={{isLoading}}>
+            <paper-material elevation="2" class="stop__item">
+                <template is="dom-repeat" items="{{stops}}" as="stop">
+                    <paper-icon-item>
+                        <iron-icon icon="image:nature" item-icon></iron-icon>
+                        <a data-route="/stop/{{stop.ref}}" href="/stop/{{stop.ref}}">
+                            <paper-item-body two-line>
+                                <div>{{stop.name}} ({{stop.ref}})</div>
+                            </paper-item-body>
+                        </a>
+                    </paper-icon-item>
+                </template>
+            </paper-material>
+        </div>
     </template>
 
     <script>
@@ -94,12 +67,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
             _lineRefChanged: function(newValue, oldValue){
                 var lineRef = newValue;
-                console.log(lineRef);
+                this.isLoading = true;
 
-                this.$.dbStopsDirection1.location = "https://resplendent-inferno-2934.firebaseio.com/stops/" + lineRef + "/11";
-
-                this.$.dbStopsDirection2.location = "https://resplendent-inferno-2934.firebaseio.com/stops/" + lineRef + "/22";
-                // this.$.mapDirections.startAddress = {lat: 40.9702648, lng: -5.6654149}
+                this.$.ajax.url = "/api/v0.1/line/" + lineRef;
             }
         });
 

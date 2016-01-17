@@ -11,9 +11,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
 <link rel="import" href="../../bower_components/paper-item/paper-item.html">
 <link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-spinner/paper-spinner.html">
 <link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
 <link rel="import" href="../../bower_components/google-map/google-map.html">
 <link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+<link rel="import" href="../../bower_components/geo-location/geo-location.html">
 
 
 <dom-module id="busal-stop">
@@ -28,6 +30,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         google-map {
             height: 200px;
         }
+        .loading{
+            text-align: center;
+        }
         </style>
 
         <iron-ajax
@@ -36,41 +41,57 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             url="/api/v0.1/stop/34"
             handle-as="json"
             last-response="{{stop}}"
-            debounce-duration="300"></iron-ajax>
+            debounce-duration="300"
+            loading="{{isLoading}}"></iron-ajax>
 
-        <h2>Parada {{ stop.name }}({{ stop.ref }})</h2>
+        <geo-location watch-pos high-accuracy id="geolocation" latitude="{{lat}}"
+               longitude="{{lng}}"></geo-location>
 
-        <paper-menu selected="{{selectedLineRef}}" selectable=".bus-line" attr-for-selected="ref">
-            <template is="dom-repeat" items="{{stop.lines}}" as="line">
-                <paper-item class="bus-line" ref="line-{{line.lineRef}}-{{line.directionRef}}-{{line.vehicleRef}}">
-                    <paper-item-body two-line>
-                        <div>Linea {{line.lineRef}} - {{ line.expectedArrivalTime }}</div>
-                        <div secondary>{{line.directionName}}</div>
-                    </paper-item-body>
-                </paper-item>
+        <div class="loading" hidden$={{!isLoading}}>
+            <paper-spinner alt="Cargando información de la parada" active></paper-spinner>
+        </div>
+        <div hidden$={{isLoading}}>
+            <h2>Parada {{ stop.name }}({{ stop.ref }})</h2>
 
-                <iron-collapse id="line-{{line.lineRef}}-{{line.directionRef}}-{{line.vehicleRef}}">
-                    <div class="bus-stop__content">
-                        <div>
-                            {{line.directionName}}
+            <paper-menu selected="{{selectedLineRef}}" selectable=".bus-line" attr-for-selected="ref">
+                <template is="dom-repeat" items="{{stop.lines}}" as="line">
+                    <paper-item hidden$="{{compareLines(line.lineRef, lineRef)}}" class="bus-line" id="{{line.lineRef}}" ref="line-{{line.lineRef}}-{{line.directionRef}}-{{index}}">
+                        <paper-item-body two-line>
+                            <div>Linea {{line.lineRef}} - {{ line.expectedArrivalTime }}</div>
+                            <div secondary>{{line.directionName}}</div>
+                        </paper-item-body>
+                    </paper-item>
+
+                    <iron-collapse id="line-{{line.lineRef}}-{{line.directionRef}}-{{index}}">
+                        <div class="bus-stop__content">
+                            <div>
+                                {{line.directionName}}
+                            </div>
+                            <google-map id="map-line-{{line.lineRef}}-{{line.directionRef}}-{{index}}" latitude="[[lat]]" longitude="[[lng]]" fit-to-markers language="en" zoom="14">
+                                <google-map-marker latitude="{{ line.location.lat }}" longitude="{{ line.location.lng }}" icon="/images/maps/bus.png">
+                                </google-map-marker>
+                                <google-map-marker latitude="{{ stop.lat }}" longitude="{{ stop.lng }}" icon="/images/maps/bus_stop.png">
+                                </google-map-marker>
+                                <google-map-marker icon="/images/maps/user.png" latitude="[[lat]]" longitude="[[lng]]"></google-map-marker>
+                            </google-map>
                         </div>
-                        <google-map id="map-line-{{line.lineRef}}-{{line.directionRef}}-{{line.vehicleRef}}" latitude="37.779" longitude="-122.3892" fit-to-markers language="en" zoom="14">
-                            <google-map-marker latitude="{{ line.location.lat }}" longitude="{{ line.location.lng }}"></google-map-marker>
-                        </google-map>
-                    </div>
-                </iron-collapse>
-            </template>
-        </paper-menu>
+                    </iron-collapse>
+
+                </template>
+            </paper-menu>
+        </div>
 
     </template>
 
-    <script src="../../bower_components/moment/min/moment-with-locales.min.js"></script>
     <script>
     (function() {
         'use strict';
 
         Polymer({
             is: 'busal-stop',
+            listener: {
+                'geolocation.geo-response': 'onChangeLocation'
+            },
             properties: {
                 selectedLineRef: {
                     observer: '_selectedLineRefChanged'
@@ -86,7 +107,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                     observer: '_stopRefChanged'
                 }
             },
+            compareLines: function(loopLineRef, lineRef) {
+                if (lineRef === ""){
+                    return false;
+                }
+
+                return (loopLineRef !== lineRef);
+            },
+            onChangeLocation: function(e) {
+                console.log('lat:' + this.lat, 'lng:' + this.lng);
+            },
             _stopRefChanged: function(newValue, oldValue){
+                this.isLoading = true;
                 this.$.ajax.url = "/api/v0.1/stop/" + newValue;
             },
             _selectedLineRefChanged: function(newValue) {
