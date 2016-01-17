@@ -112,9 +112,12 @@
             };
 
         soapClient.call(callParams)
-            .then(function(callResponse) {
-                var response = busal.parseStopSOAP(callResponse);
-                res.json(response);
+            .then(function(soapResponse) {
+                // res.json(soapResponse);
+
+                var response = busal.parseStopSOAP(stopRef, soapResponse, function(response) {
+                    res.json(response);
+                });
             })
             .catch(function(err) {
                 logger.info(err);

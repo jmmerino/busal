@@ -4,6 +4,7 @@
 
     var moment = require("moment"),
         firebase = require("firebase"),
+        logger = require("./logger"),
         _ = require("underscore");
 
     var db = new firebase("https://resplendent-inferno-2934.firebaseio.com/");
@@ -43,7 +44,6 @@
 
             // Store directions
             if (_.isArray(rawSoapDirections)) {
-                console.log("array");
                 rawSoapDirections.forEach(function(rawSoapDirection) {
                     dbDirectionsCollection
                         .child(lineRef)
@@ -71,32 +71,58 @@
 
     };
 
-    exports.parseStopSOAP = function(stopSOAPResponse) {
+    exports.parseStopSOAP = function(stopRef, stopSOAPResponse, callback) {
         var data = stopSOAPResponse.data.GetStopMonitoringResponse.GetStopMonitoringResult[1].Answer.StopMonitoringDelivery;
 
-        var linesInThisStop = [];
+        var linesInThisStop = [],
+            stopName;
 
         for (var i = 4; i < data.length; i++) {
             var stopInfo = data[i].MonitoredStopVisit[2].MonitoredVehicleJourney;
             var line = {
-                lineRef       : stopInfo[0].lineRef,
-                directionRef  : stopInfo[1].DirectionRef,
-                lineName      : stopInfo[3].PublishedLineName,
-                directionName : stopInfo[4].DirectionName,
-                arrivalTime   : stopInfo[19].MonitoredCall[3].ExpectedArrivalTime,
-                distance      : stopInfo[19].MonitoredCall[6].DistanceFromStop
+                lineRef             : stopInfo[0].LineRef,
+                directionRef        : stopInfo[1].DirectionRef,
+                vehicleRef          : stopInfo[18].VehicleRef,
+                lineName            : stopInfo[3].PublishedLineName,
+                directionName       : stopInfo[4].DirectionName,
+                expectedArrivalTime : moment(stopInfo[19].MonitoredCall[3].ExpectedArrivalTime).fromNow(),
+                aimedArrivalTime    : moment(stopInfo[19].MonitoredCall[2].AimedArrivalTime).fromNow(),
+                distance            : stopInfo[19].MonitoredCall[6].DistanceFromStop,
+                location: {
+                    lat: stopInfo[13].VehicleLocation[0].Latitude,
+                    lng: stopInfo[13].VehicleLocation[1].Longitude,
+                }
             }
+
+            stopName = stopInfo[19].MonitoredCall[1].StopPointName
+
 
             linesInThisStop.push(line);
         };
 
-        return linesInThisStop;
+        db.child("stops_raw/" + stopRef).on("value", function(firebaseResponse) {
+            var result = firebaseResponse.val();
+            result.lines = linesInThisStop;
+            callback(result);
+        });
+
     };
 
     function saveStops(lineRef, rawSoapDirection) {
-        var dbStopsCollection = db.child("stops");
+        var dbStopsCollection = db.child("stops"),
+            dbOnlyStopsCollection = db.child("stops_raw");
 
         rawSoapDirection.Direction[2].Stops.forEach(function(rawSoapStop) {
+
+            dbOnlyStopsCollection
+                .child(rawSoapStop.StopPointInPattern[0].StopPointRef)
+                .set({
+                    ref: rawSoapStop.StopPointInPattern[0].StopPointRef,
+                    name: rawSoapStop.StopPointInPattern[1].StopName,
+                    lat: rawSoapStop.StopPointInPattern[2].Location[0].Latitude,
+                    lng: rawSoapStop.StopPointInPattern[2].Location[1].Longitude,
+                    order: rawSoapStop.StopPointInPattern[3].Order,
+                });
 
             dbStopsCollection.child(lineRef)
                 .child(rawSoapDirection.Direction[0].DirectionRef)

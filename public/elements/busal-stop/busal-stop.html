@@ -1,0 +1,106 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-marker.html">
+
+
+<dom-module id="busal-stop">
+    <template>
+        <style>
+        :host {
+            display: block;
+        }
+        .bus-stop__content{
+            padding: 20px;
+        }
+        google-map {
+            height: 200px;
+        }
+        </style>
+
+        <iron-ajax
+            id="ajax"
+            auto
+            url="/api/v0.1/stop/34"
+            handle-as="json"
+            last-response="{{stop}}"
+            debounce-duration="300"></iron-ajax>
+
+        <h2>Parada {{ stop.name }}({{ stop.ref }})</h2>
+
+        <paper-menu selected="{{selectedLineRef}}" selectable=".bus-line" attr-for-selected="ref">
+            <template is="dom-repeat" items="{{stop.lines}}" as="line">
+                <paper-item class="bus-line" ref="line-{{line.lineRef}}-{{line.directionRef}}-{{line.vehicleRef}}">
+                    <paper-item-body two-line>
+                        <div>Linea {{line.lineRef}} - {{ line.expectedArrivalTime }}</div>
+                        <div secondary>{{line.directionName}}</div>
+                    </paper-item-body>
+                </paper-item>
+
+                <iron-collapse id="line-{{line.lineRef}}-{{line.directionRef}}-{{line.vehicleRef}}">
+                    <div class="bus-stop__content">
+                        <div>
+                            {{line.directionName}}
+                        </div>
+                        <google-map id="map-line-{{line.lineRef}}-{{line.directionRef}}-{{line.vehicleRef}}" latitude="37.779" longitude="-122.3892" fit-to-markers language="en" zoom="14">
+                            <google-map-marker latitude="{{ line.location.lat }}" longitude="{{ line.location.lng }}"></google-map-marker>
+                        </google-map>
+                    </div>
+                </iron-collapse>
+            </template>
+        </paper-menu>
+
+    </template>
+
+    <script src="../../bower_components/moment/min/moment-with-locales.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        Polymer({
+            is: 'busal-stop',
+            properties: {
+                selectedLineRef: {
+                    observer: '_selectedLineRefChanged'
+                },
+                lineRef:{
+                    type: String
+                },
+                directionRef:{
+                    type: String
+                },
+                stopRef: {
+                    type: String,
+                    observer: '_stopRefChanged'
+                }
+            },
+            _stopRefChanged: function(newValue, oldValue){
+                this.$.ajax.url = "/api/v0.1/stop/" + newValue;
+            },
+            _selectedLineRefChanged: function(newValue) {
+                if (newValue) {
+                    var linesElements = this.querySelectorAll('iron-collapse');
+                    for (var i = 0; i < linesElements.length; i++) {
+                        linesElements[i].hide();
+                    };
+                    this.querySelector("#" + newValue).toggle();
+                    this.querySelector("#map-" + newValue).resize();
+                }
+            }
+        });
+
+    })();
+    </script>
+</dom-module>

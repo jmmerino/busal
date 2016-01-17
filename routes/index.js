@@ -1,8 +1,8 @@
-var fdwp;
 (function() {
     "use strict";
 
     var express = require("express"),
+        busal = require("../busal"),
         router = express.Router();
 
     router.get("/", function(req, res) {
@@ -21,10 +21,7 @@ var fdwp;
 
     router.get("/stop/:stopRef", function(req, res) {
         var stopRef = req.params.stopRef;
-
-        res.render("index", {
-            stopRef: stopRef
-        });
+        res.render("index");
     });
 
     router.get("/fav", function(req, res) {
