@@ -42,7 +42,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <paper-spinner alt="Cargando información de la parada" active></paper-spinner>
         </div>
         <div hidden$={{isLoading}}>
-            <paper-menu selected="{{stopRef}}" attr-for-selected="id">
+            <paper-menu selected="{{stopRef}}" attr-for-selected="id" elevation="1">
                 <template is="dom-repeat" items="{{stops}}" as="stop">
                     <paper-icon-item id="{{stop.ref}}">
                         <iron-icon icon="image:nature" item-icon></iron-icon>

@@ -54,13 +54,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div hidden$={{isLoading}}>
             <h2>Parada {{ stop.name }}({{ stop.ref }})</h2>
 
-            <paper-menu id="stop-menu" on-tap="onTapPaperItem" selected="{{selectedLineRef}}" selectable=".bus-line" attr-for-selected="ref">
+            <paper-menu id="stop-menu" selected="{{selectedLineRef}}" selectable=".bus-line" attr-for-selected="ref" elevation="1">
                 <template is="dom-repeat" items="{{stop.lines}}" as="line">
-                    <paper-item id="paper-item" hidden$="{{compareLines(line.lineRef, lineRef)}}" class="bus-line" id="{{line.lineRef}}" ref="line-{{line.lineRef}}-{{line.directionRef}}-{{index}}">
+                    <paper-item on-tap="onTapPaperItem" hidden$="{{compareLines(line.lineRef, lineRef)}}" class="bus-line" id="{{line.lineRef}}" ref="line-{{line.lineRef}}-{{line.directionRef}}-{{index}}">
                         <paper-item-body two-line>
                             <div>Linea {{line.lineRef}} - {{ line.expectedArrivalTime }}</div>
                             <div secondary>{{line.directionName}}</div>
                         </paper-item-body>
+                        <iron-icon icon="maps:map"></iron-icon>
                     </paper-item>
 
                     <iron-collapse id="line-{{line.lineRef}}-{{line.directionRef}}-{{index}}">
@@ -86,16 +87,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     <script>
     (function() {
-        'use strict';
+        "use strict";
 
         Polymer({
-            is: 'busal-stop',
-            listener: {
-                'geolocation.geo-response': 'onChangeLocation'
-            },
+            is: "busal-stop",
             properties: {
                 selectedLineRef: {
-                    observer: '_selectedLineRefChanged'
+                    observer: "_selectedLineRefChanged"
                 },
                 lineRef:{
                     type: String
@@ -105,7 +103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                 },
                 stopRef: {
                     type: String,
-                    observer: '_stopRefChanged'
+                    observer: "_stopRefChanged"
                 }
             },
             compareLines: function(loopLineRef, lineRef) {
@@ -115,26 +113,31 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
                 return (loopLineRef !== lineRef);
             },
-            onChangeLocation: function(e) {
-                console.log('lat:' + this.lat, 'lng:' + this.lng);
-            },
-            _stopRefChanged: function(newValue, oldValue){
+            _stopRefChanged: function(newValue){
                 this.isLoading = true;
                 this.selectedLineRef = null;
                 this.$.ajax.url = "/api/v0.1/stop/" + newValue;
             },
             _selectedLineRefChanged: function(newValue) {
+                var linesElements = this.querySelectorAll("iron-collapse");
+                for (var i = 0; i < linesElements.length; i++) {
+                    linesElements[i].hide();
+                }
+
                 if (newValue) {
-                    this.previousSelectedLineRef = this.selectedLineRef;
                     this.querySelector("#" + newValue).toggle();
                     this.querySelector("#map-" + newValue).resize();
                 }
             },
             onTapPaperItem: function() {
-                var linesElements = this.querySelectorAll('iron-collapse');
-                for (var i = 0; i < linesElements.length; i++) {
-                    linesElements[i].hide();
-                };
+                if (this.selectedLineRef) {
+                    var currentElement = this.querySelector("#" + this.selectedLineRef);
+                    if (currentElement.opened) {
+                        currentElement.hide();
+                    } else {
+                        currentElement.show();
+                    }
+                }
             }
         });
 

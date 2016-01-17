@@ -30,7 +30,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </firebase-collection>
 
 <div class="lines__container">
-    <paper-menu selected="{{lineRef}}" attr-for-selected="id">
+    <paper-menu selected="{{lineRef}}" attr-for-selected="id" elevation="3">
         <template is="dom-repeat" items="{{lines}}" as="line">
             <paper-icon-item id="{{ line.ref }}">
                 <iron-icon icon="maps:directions-bus" item-icon></iron-icon>
