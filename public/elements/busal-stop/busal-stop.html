@@ -54,9 +54,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         <div hidden$={{isLoading}}>
             <h2>Parada {{ stop.name }}({{ stop.ref }})</h2>
 
-            <paper-menu selected="{{selectedLineRef}}" selectable=".bus-line" attr-for-selected="ref">
+            <paper-menu id="stop-menu" on-tap="onTapPaperItem" selected="{{selectedLineRef}}" selectable=".bus-line" attr-for-selected="ref">
                 <template is="dom-repeat" items="{{stop.lines}}" as="line">
-                    <paper-item hidden$="{{compareLines(line.lineRef, lineRef)}}" class="bus-line" id="{{line.lineRef}}" ref="line-{{line.lineRef}}-{{line.directionRef}}-{{index}}">
+                    <paper-item id="paper-item" hidden$="{{compareLines(line.lineRef, lineRef)}}" class="bus-line" id="{{line.lineRef}}" ref="line-{{line.lineRef}}-{{line.directionRef}}-{{index}}">
                         <paper-item-body two-line>
                             <div>Linea {{line.lineRef}} - {{ line.expectedArrivalTime }}</div>
                             <div secondary>{{line.directionName}}</div>
@@ -120,17 +120,21 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             },
             _stopRefChanged: function(newValue, oldValue){
                 this.isLoading = true;
+                this.selectedLineRef = null;
                 this.$.ajax.url = "/api/v0.1/stop/" + newValue;
             },
             _selectedLineRefChanged: function(newValue) {
                 if (newValue) {
-                    var linesElements = this.querySelectorAll('iron-collapse');
-                    for (var i = 0; i < linesElements.length; i++) {
-                        linesElements[i].hide();
-                    };
+                    this.previousSelectedLineRef = this.selectedLineRef;
                     this.querySelector("#" + newValue).toggle();
                     this.querySelector("#map-" + newValue).resize();
                 }
+            },
+            onTapPaperItem: function() {
+                var linesElements = this.querySelectorAll('iron-collapse');
+                for (var i = 0; i < linesElements.length; i++) {
+                    linesElements[i].hide();
+                };
             }
         });
 
