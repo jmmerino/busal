@@ -30,19 +30,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </firebase-collection>
 
 <div class="lines__container">
-    <template is="dom-repeat" items="{{lines}}" as="line">
-        <paper-material elevation="2" class="lines__item">
-            <paper-icon-item>
+    <paper-menu selected="{{lineRef}}" attr-for-selected="id">
+        <template is="dom-repeat" items="{{lines}}" as="line">
+            <paper-icon-item id="{{ line.ref }}">
                 <iron-icon icon="maps:directions-bus" item-icon></iron-icon>
-                <a data-route="/lines/{{line.ref}}" href="/lines/{{line.ref}}">
-                    <paper-item-body two-line>
-                        <div>Línea - {{line.ref}}</div>
-                        <div>{{line.name}}</div>
-                    </paper-item-body>
-                </a>
+                <paper-item-body two-line>
+                    <div>Línea - {{line.ref}}</div>
+                    <div>{{line.name}}</div>
+                </paper-item-body>
             </paper-icon-item>
-        </paper-material>
-    </template>
+        </template>
+    </paper-menu>
 </paper-material>
 </template>
 
@@ -51,7 +49,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     'use strict';
 
     Polymer({
-        is: 'busal-lines'
+        is: 'busal-lines',
+        properties: {
+            lineRef: {
+                observer: '_selectedLineRefChanged'
+            }
+        },
+        _selectedLineRefChanged: function(newValue) {
+            app.route = "/lines/" + newValue;
+            page("/lines/" + newValue);
+        }
     });
 })();
 </script>

@@ -23,6 +23,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         .stop__item{
             margin-bottom: 20px;
         }
+        .loading{
+            padding: 20px 0;
+            text-align: center;
+        }
         </style>
 
         <iron-ajax
@@ -38,18 +42,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             <paper-spinner alt="Cargando información de la parada" active></paper-spinner>
         </div>
         <div hidden$={{isLoading}}>
-            <paper-material elevation="2" class="stop__item">
+            <paper-menu selected="{{stopRef}}" attr-for-selected="id">
                 <template is="dom-repeat" items="{{stops}}" as="stop">
-                    <paper-icon-item>
+                    <paper-icon-item id="{{stop.ref}}">
                         <iron-icon icon="image:nature" item-icon></iron-icon>
-                        <a data-route="/stop/{{stop.ref}}" href="/stop/{{stop.ref}}">
-                            <paper-item-body two-line>
-                                <div>{{stop.name}} ({{stop.ref}})</div>
-                            </paper-item-body>
-                        </a>
+                        <paper-item-body two-line>
+                            <div>{{stop.name}} ({{stop.ref}})</div>
+                        </paper-item-body>
                     </paper-icon-item>
                 </template>
-            </paper-material>
+            </paper-menu>
         </div>
     </template>
 
@@ -60,10 +62,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         Polymer({
             is: 'busal-line',
             properties: {
+                stopRef: {
+                    observer: '_stopRefChanged'
+                },
                 lineRef: {
                     type: String,
                     observer: '_lineRefChanged'
                 }
+            },
+            _stopRefChanged: function(newValue) {
+                app.route = "/stop/" + newValue;
+                page("/stop/" + newValue);
+
             },
             _lineRefChanged: function(newValue, oldValue){
                 var lineRef = newValue;
